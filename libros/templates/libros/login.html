@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión - Biblioteca</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; font-family: "Segoe UI", Arial, sans-serif; color: #1a1a1a; background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 50%, #d6d6d6 100%); }
+        .contenedor-login { width: 100%; max-width: 420px; padding: 40px 35px; background-color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 20px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12); }
+        h1 { margin-bottom: 10px; color: #cc0000; font-size: 30px; text-align: center; letter-spacing: -0.5px; }
+        .subtitulo { margin-bottom: 25px; color: #4d4d4d; font-size: 14px; line-height: 1.5; text-align: center; }
+        form { display: flex; flex-direction: column; gap: 10px; }
+        label { margin-top: 8px; color: #000000; font-size: 14px; font-weight: 600; }
+        input { width: 100%; padding: 13px 15px; font-family: inherit; font-size: 15px; color: #1a1a1a; background-color: #fafafa; border: 1px solid #cccccc; border-radius: 10px; outline: none; transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s; }
+        input::placeholder { color: #808080; }
+        input:hover { border-color: #b30000; }
+        input:focus { background-color: #ffffff; border-color: #cc0000; box-shadow: 0 0 0 4px rgba(204, 0, 0, 0.12); }
+        button { width: 100%; margin-top: 20px; padding: 14px; font-family: inherit; font-size: 16px; font-weight: 600; color: #ffffff; background: linear-gradient(135deg, #cc0000, #990000); border: none; border-radius: 10px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        button:hover { background: linear-gradient(135deg, #990000, #660000); box-shadow: 0 8px 18px rgba(204, 0, 0, 0.25); transform: translateY(-2px); }
+        button:active { transform: translateY(0); }
+        button:focus-visible { outline: 3px solid #ff6666; outline-offset: 3px; }
+        #mensaje { margin-top: 20px; padding: 12px; border-radius: 8px; font-size: 14px; text-align: center; overflow-wrap: anywhere; }
+        #mensaje:empty { display: none; }
+        #mensaje.exito { color: #166534; background-color: #dcfce7; border: 1px solid #bbf7d0; }
+        #mensaje.error { color: #b91c1c; background-color: #fee2e2; border: 1px solid #fecaca; }
+        @media (max-width: 480px) { .contenedor-login { padding: 30px 22px; border-radius: 16px; } h1 { font-size: 26px; } }
+    </style>
+</head>
+<body>
+    <div class="contenedor-login">
+        <h1>Sistema de Biblioteca</h1>
+        <p class="subtitulo">Ingresa tus credenciales para continuar.</p>
+        <form id="formLogin">
+            <label for="username">Usuario:</label>
+            <input type="text" id="username" name="username" placeholder="Ingresa tu usuario" autocomplete="username" required>
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" autocomplete="current-password" required>
+            <button type="submit">Ingresar</button>
+        </form>
+        <p id="mensaje" role="status" aria-live="polite"></p>
+    </div>
+
+    <script>
+        const formulario = document.getElementById('formLogin');
+        const mensaje = document.getElementById('mensaje');
+
+        formulario.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            mensaje.textContent = '';
+            mensaje.className = '';
+
+            try {
+                const respuesta = await fetch('/libros/api/login/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username, password: password })
+                });
+
+                const datos = await respuesta.json();
+
+                if (respuesta.ok) {
+                    sessionStorage.setItem('token', datos.token);
+                    mensaje.textContent = 'Inicio de sesión correcto';
+                    mensaje.className = 'exito';
+                    window.location.href = '/libros/'; 
+                } else {
+                    mensaje.textContent = datos.error || 'Error al iniciar sesión';
+                    mensaje.className = 'error';
+                }
+                } catch (error) {
+                    mensaje.textContent = 'No se pudo conectar con el servidor. Intenta nuevamente.';
+                    mensaje.className = 'error';
+                }
+        });
+    </script>
+</body>
+</html>
+

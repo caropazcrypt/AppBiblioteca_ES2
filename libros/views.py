@@ -1,6 +1,14 @@
+from django.http import request
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Libro
 from datetime import date
+from django.contrib.auth import authenticate
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny
+from django.contrib.auth import logout
 
 def lista_libros(request):
     libros = Libro.objects.all()
@@ -108,3 +116,24 @@ def eliminar_libro(request, id):
         return redirect('lista_libros')
         
     return render(request, 'libros/eliminar_libro.html', {'libro': libro})
+
+def login_view(request):
+    return render(request, 'libros/login.html')
+
+class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        
+        user = authenticate(username=username, password=password)
+        
+        if user is not None:
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({'token': token.key}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Credenciales incorrectas'}, status=status.HTTP_401_UNAUTHORIZED)
+def logout_view(request):
+    logout(request)
+    return redirect('login')
