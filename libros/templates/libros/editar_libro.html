@@ -9,11 +9,12 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f8f9fa; 
+            background-color: #f8f9fa;
             color: #333333;
             margin: 0;
             padding: 20px;
         }
+
         h1 {
             font-family: Georgia, "Times New Roman", serif;
             color: #1a1a1a;
@@ -21,76 +22,105 @@
             font-size: 32px;
             margin-bottom: 30px;
         }
-        form {
+
+        form, .confirmacion {
             background-color: white;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             max-width: 500px;
             margin: 0 auto 40px auto;
-            border-top: 5px solid #cc0000; 
+            border-top: 5px solid #cc0000;
         }
-        label { 
-            font-weight: bold; 
-            color: #1a1a1a; 
-            display: block; 
-            margin-top: 15px; 
+
+        label {
+            font-weight: bold;
+            color: #1a1a1a;
+            display: block;
+            margin-top: 15px;
         }
-        input[type="text"], input[type="date"] {
-            width: 100%; 
-            padding: 10px; 
+
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            padding: 10px;
             margin-top: 8px;
-            border: 1px solid #ccc; 
-            border-radius: 5px; 
+            border: 1px solid #ccc;
+            border-radius: 5px;
             box-sizing: border-box;
             font-size: 15px;
         }
+
         p {
-            text-align: center; 
-            font-size: 16px; 
-            margin-bottom: 20px;
-        }
-        /* Botón rojo institucional */
-        button {
-            background-color: #cc0000; 
-            color: white; 
-            padding: 12px 20px;
-            border: none; 
-            border-radius: 5px; 
-            width: 100%; 
+            text-align: center;
             font-size: 16px;
-            margin-top: 25px; 
-            cursor: pointer; 
-            transition: background-color 0.3s; 
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        button {
+            background-color: #cc0000;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s;
             font-weight: bold;
         }
-        button:hover { 
+
+        button:hover {
             background-color: #990000;
         }
-        a { 
-            display: block; 
-            text-align: center; 
-            margin-top: 20px; 
-            color: #1a1a1a; 
-            text-decoration: none; 
-            font-weight: bold; 
+
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #1a1a1a;
+            text-decoration: none;
+            font-weight: bold;
         }
-        a:hover { 
+
+        a:hover {
             color: #cc0000;
-            text-decoration: underline; 
-    }
-    
-</style>
+            text-decoration: underline;
+        }
+
+        .confirmacion {
+            text-align: center;
+            display: none;
+        }
+
+        .confirmacion h2 {
+            font-family: Georgia, "Times New Roman", serif;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
+
+        .boton-cancelar {
+            background-color: #666666;
+            margin-top: 10px;
+        }
+
+        .boton-cancelar:hover {
+            background-color: #444444;
+        }
+    </style>
 </head>
 
 <body>
 
-    <h1>Editar libro</h1>
+    <h1 id="tituloPagina">Editar libro</h1>
+
     {% if error %}
-    <p style="color: red;">{{ error }}</p>
+        <p style="color: red;">{{ error }}</p>
     {% endif %}
 
-    <form method="POST">
+    <form method="POST" id="formEditar">
         {% csrf_token %}
 
         <label>Título:</label>
@@ -143,15 +173,82 @@
         <br><br>
 
         <button type="submit">Guardar cambios</button>
-
     </form>
 
-    <br>
+    
+    <div class="confirmacion" id="confirmacion">
+        <h2>Confirmar cambios</h2>
+
+        <p>
+            Has modificado el título del libro,
+            pero mantuviste el mismo ISBN.
+        </p>
+
+        <p>
+            <strong>¿Deseas guardar los cambios?</strong>
+        </p>
+
+        <button type="button" id="btnConfirmar">
+            Sí, guardar cambios
+        </button>
+
+        <button type="button"
+                class="boton-cancelar"
+                id="btnCancelar">
+            Cancelar
+        </button>
+    </div>
 
     <a href="{% url 'lista_libros' %}">
         Volver al listado
     </a>
 
-</body>
+    <script>
+        const formulario = document.getElementById("formEditar");
+        const confirmacion = document.getElementById("confirmacion");
+        const tituloPagina = document.getElementById("tituloPagina");
 
+        const tituloOriginal = "{{ libro.titulo|escapejs }}";
+        const isbnOriginal = "{{ libro.isbn|escapejs }}";
+
+        let confirmado = false;
+
+        formulario.addEventListener("submit", function(event) {
+            if (confirmado) {
+                return;
+            }
+
+            const tituloNuevo = formulario.elements["titulo"].value.trim();
+            const isbnNuevo = formulario.elements["isbn"].value.trim();
+
+            if (
+                tituloNuevo !== tituloOriginal &&
+                isbnNuevo === isbnOriginal
+            ) {
+                event.preventDefault();
+
+                formulario.style.display = "none";
+                confirmacion.style.display = "block";
+                
+            }
+        });
+
+        document.getElementById("btnConfirmar").addEventListener(
+            "click", function() {
+                confirmado = true;
+                formulario.requestSubmit();
+            }
+        );
+
+        document.getElementById("btnCancelar").addEventListener(
+            "click", function() {
+                tituloPagina.style.display = "block";
+                confirmacion.style.display = "none";
+                formulario.style.display = "block";
+                tituloPagina.textContent = "Editar libro";
+            }
+        );
+    </script>
+
+</body>
 </html>

@@ -57,6 +57,7 @@
         .menu {
             display: flex;
             gap: 25px;
+            align-items: center;
         }
 
         .menu a {
@@ -67,6 +68,29 @@
         }
 
         .menu a:hover {
+            color: #ffffff;
+        }
+
+        /* CERRAR SESIÓN */
+
+        .form-logout {
+            margin: 0;
+            padding: 0;
+        }
+
+        .btn-logout {
+            background: none;
+            border: none;
+            color: #dddddd;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0;
+            transition: 0.2s;
+        }
+
+        .btn-logout:hover {
             color: #ffffff;
         }
 
@@ -133,9 +157,7 @@
 
         .libros {
             display: grid;
-
             grid-template-columns: repeat(2, 1fr);
-
             gap: 25px;
         }
 
@@ -144,11 +166,8 @@
 
         .libro {
             background-color: white;
-
             padding: 22px;
-
             border-radius: 10px;
-
             border-top: 4px solid #d71920;
 
             box-shadow: 0 3px 12px
@@ -196,7 +215,6 @@
         .botones {
             margin-top: 20px;
             padding-top: 15px;
-
             border-top: 1px solid #eeeeee;
 
             display: flex;
@@ -206,14 +224,10 @@
 
         .botones a {
             padding: 8px 12px;
-
             text-decoration: none;
-
             border-radius: 5px;
-
             font-size: 14px;
             font-weight: bold;
-
             transition: 0.2s;
         }
 
@@ -240,13 +254,9 @@
 
         .sin-libros {
             background-color: white;
-
             padding: 30px;
-
             border-radius: 8px;
-
             text-align: center;
-
             color: #666666;
         }
 
@@ -256,11 +266,8 @@
         footer {
             background-color: #1c1c1c;
             color: #aaaaaa;
-
             text-align: center;
-
             padding: 20px;
-
             margin-top: 50px;
         }
 
@@ -275,16 +282,15 @@
 
             .navbar {
                 width: 90%;
-
                 flex-direction: column;
-
                 padding: 15px 0;
-
                 gap: 15px;
             }
 
             .menu {
                 gap: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
             }
 
             h1 {
@@ -294,31 +300,22 @@
             .libros {
                 grid-template-columns: 1fr;
             }
-
         }
 
     </style>
 
 </head>
 
-
 <body>
-
-
-    
 
     <nav>
 
         <div class="navbar">
 
-            <a
-                href="{% url 'lista_libros' %}"
-                class="logo"
-            >
+            <a href="{% url 'lista_libros' %}" class="logo">
                 <span>▮</span>
                 Biblioteca
             </a>
-
 
             <div class="menu">
 
@@ -329,25 +326,31 @@
                 <a href="{% url 'crear_libro' %}">
                     Registrar libro
                 </a>
-                <a href="{% url 'logout' %}" onclick="sessionStorage.removeItem('token');">
-                Cerrar sesión
-                </a>
+
+                <!-- Cerrar sesión mediante POST -->
+                <form
+                    method="POST"
+                    action="{% url 'logout' %}"
+                    class="form-logout"
+                    onsubmit="sessionStorage.removeItem('token');"
+                >
+                    {% csrf_token %}
+
+                    <button type="submit" class="btn-logout">
+                        Cerrar sesión
+                    </button>
+                </form>
 
             </div>
-
 
         </div>
 
     </nav>
 
 
-
-    
-
     <main>
 
         <div class="contenedor">
-
 
             <div class="encabezado">
 
@@ -360,55 +363,39 @@
             </div>
 
 
-
-            
-
             <div class="acciones">
 
-                <a
-                    href="{% url 'crear_libro' %}"
-                    class="boton"
-                >
+                <a href="{% url 'crear_libro' %}" class="boton">
                     ➕ Registrar nuevo libro
                 </a>
 
             </div>
 
 
-
-            
-
             <div class="libros">
-
 
                 {% for libro in libros %}
 
-
                     <div class="libro">
-
 
                         <h2>
                             {{ libro.titulo }}
                         </h2>
-
 
                         <p>
                             <strong>Autor:</strong>
                             {{ libro.autor }}
                         </p>
 
-
                         <p>
                             <strong>ISBN:</strong>
                             {{ libro.isbn }}
                         </p>
 
-
                         <p>
                             <strong>Fecha de publicación:</strong>
                             {{ libro.fecha_publicacion|date:"d/m/Y" }}
                         </p>
-
 
                         <p>
 
@@ -431,11 +418,7 @@
                         </p>
 
 
-
-                        
-
                         <div class="botones">
-
 
                             <a
                                 href="{% url 'editar_libro' libro.id %}"
@@ -444,7 +427,6 @@
                                 ✏ Editar
                             </a>
 
-
                             <a
                                 href="{% url 'eliminar_libro' libro.id %}"
                                 class="eliminar"
@@ -452,43 +434,28 @@
                                 🗑 Eliminar
                             </a>
 
-
                         </div>
 
-
                     </div>
-
 
                 {% empty %}
 
-
                     <div class="sin-libros">
-
                         No existen libros registrados.
-
                     </div>
-
 
                 {% endfor %}
 
-
             </div>
-
 
         </div>
 
     </main>
 
 
-
-    
-
     <footer>
-
         Sistema de Biblioteca · Proyecto Django
-
     </footer>
-
 
 </body>
 
