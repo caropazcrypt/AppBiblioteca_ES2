@@ -329,8 +329,12 @@
                 <a href="{% url 'crear_libro' %}">
                     Registrar libro
                 </a>
+                <a href="{% url 'logout' %}" onclick="sessionStorage.removeItem('token');">
+                Cerrar sesión
+                </a>
 
             </div>
+
 
         </div>
 

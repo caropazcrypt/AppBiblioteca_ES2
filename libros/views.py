@@ -1,16 +1,22 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from .models import Libro
 from datetime import date, datetime
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
+@login_required
 def lista_libros(request):
     libros = Libro.objects.all()
     return render(request, 'libros/lista_libros.html', {'libros': libros})
 
+@login_required
 def crear_libro(request):
     if request.method == 'POST':
         titulo = request.POST['titulo'].strip()
@@ -60,6 +66,7 @@ def crear_libro(request):
         return redirect('lista_libros')
     return render(request, 'libros/crear_libro.html')
 
+@login_required
 def editar_libro(request, id):
     libro = Libro.objects.get(id=id)
 
@@ -105,6 +112,7 @@ def editar_libro(request, id):
 
     return render(request, 'libros/editar_libro.html', {'libro': libro})
 
+@login_required
 def eliminar_libro(request, id):
     libro = Libro.objects.get(id=id)
     
@@ -114,6 +122,30 @@ def eliminar_libro(request, id):
         
     return render(request, 'libros/eliminar_libro.html', {'libro': libro})
 
+def login_view(request):
+    return render(request, 'libros/login.html')
+
+class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        
+        user = authenticate(username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({'token': token.key}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Credenciales incorrectas'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+ 
 class LibrosApiView(APIView):
 
     authentication_classes = [TokenAuthentication]
