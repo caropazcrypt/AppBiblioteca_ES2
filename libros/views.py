@@ -9,11 +9,14 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def lista_libros(request):
     libros = Libro.objects.all()
     return render(request, 'libros/lista_libros.html', {'libros': libros})
 
+@login_required
 def crear_libro(request):
     if request.method == 'POST':
         titulo = request.POST['titulo'].strip()
@@ -63,6 +66,7 @@ def crear_libro(request):
         return redirect('lista_libros')
     return render(request, 'libros/crear_libro.html')
 
+@login_required
 def editar_libro(request, id):
     libro = Libro.objects.get(id=id)
 
@@ -108,6 +112,7 @@ def editar_libro(request, id):
 
     return render(request, 'libros/editar_libro.html', {'libro': libro})
 
+@login_required
 def eliminar_libro(request, id):
     libro = Libro.objects.get(id=id)
     
@@ -134,6 +139,7 @@ class LoginAPIView(APIView):
             return Response({'token': token.key}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Credenciales incorrectas'}, status=status.HTTP_401_UNAUTHORIZED)
+        
 def logout_view(request):
     logout(request)
     return redirect('login')
